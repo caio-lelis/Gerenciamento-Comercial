@@ -9,7 +9,18 @@ import { ClienteManager } from "@/components/cliente-manager"
 import { PedidoManager } from "@/components/pedido-manager"
 import { QuickActions } from "@/components/quick-actions"
 import { MaquinasManager } from "@/components/maquinas-manager"
-import { Users, ShoppingCart, DollarSign, TrendingUp, Clock, CheckCircle, AlertCircle, ChefHat } from "lucide-react"
+import {
+  Users,
+  ShoppingCart,
+  DollarSign,
+  TrendingUp,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  ChefHat,
+  Bell,
+  Zap,
+} from "lucide-react"
 
 export function Dashboard() {
   const [activeTab, setActiveTab] = useState("dashboard")
@@ -24,45 +35,95 @@ export function Dashboard() {
     pedidosEntregues: 15,
   }
 
+  const priorityAlerts = [
+    { type: "urgent", message: "3 pedidos não pagos há mais de 30min", action: () => setActiveTab("pedidos") },
+    { type: "warning", message: "Máquina 2 com 4 posições livres", action: () => setActiveTab("maquina") },
+  ]
+
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b bg-card">
+      <header className="border-b bg-card shadow-sm">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <ChefHat className="h-8 w-8 text-primary" />
-              <h1 className="text-2xl font-bold text-foreground">Frango Assado</h1>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <ChefHat className="h-8 w-8 text-primary" />
+                <h1 className="text-2xl font-bold text-foreground">Frango Assado</h1>
+              </div>
+              <Badge variant="secondary" className="ml-2">
+                Sistema de Gerenciamento
+              </Badge>
             </div>
-            <Badge variant="secondary" className="ml-auto">
-              Sistema de Gerenciamento
-            </Badge>
+
+            {/* Priority notifications */}
+            <div className="flex items-center gap-2">
+              {priorityAlerts.map((alert, index) => (
+                <Button
+                  key={index}
+                  variant={alert.type === "urgent" ? "destructive" : "secondary"}
+                  size="sm"
+                  onClick={alert.action}
+                  className="flex items-center gap-2 animate-pulse"
+                >
+                  <Bell className="h-4 w-4" />
+                  {alert.message}
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
       </header>
 
       <div className="container mx-auto px-4 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-            <TabsTrigger value="maquina">Máquinas</TabsTrigger>
-            <TabsTrigger value="clientes">Clientes</TabsTrigger>
-            <TabsTrigger value="pedidos">Pedidos</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-4 h-12">
+            <TabsTrigger value="dashboard" className="flex items-center gap-2 text-sm font-medium">
+              <TrendingUp className="h-4 w-4" />
+              Dashboard
+            </TabsTrigger>
+            <TabsTrigger value="maquina" className="flex items-center gap-2 text-sm font-medium">
+              <ChefHat className="h-4 w-4" />
+              Máquinas
+              {stats.pedidosPendentes > 0 && (
+                <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 text-xs">
+                  {stats.pedidosPendentes}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="clientes" className="flex items-center gap-2 text-sm font-medium">
+              <Users className="h-4 w-4" />
+              Clientes
+            </TabsTrigger>
+            <TabsTrigger value="pedidos" className="flex items-center gap-2 text-sm font-medium">
+              <ShoppingCart className="h-4 w-4" />
+              Pedidos
+              {stats.pedidosNaoPagos > 0 && (
+                <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 text-xs">
+                  {stats.pedidosNaoPagos}
+                </Badge>
+              )}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard" className="space-y-6">
             <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold mb-4">Ações Rápidas</h3>
+              <div className="bg-gradient-to-r from-primary/5 to-secondary/5 rounded-lg p-6 border">
+                <div className="flex items-center gap-2 mb-4">
+                  <Zap className="h-5 w-5 text-primary" />
+                  <h3 className="text-lg font-semibold">Ações Rápidas</h3>
+                  <Badge variant="outline" className="ml-auto">
+                    Operação Rápida
+                  </Badge>
+                </div>
                 <QuickActions
                   onPedidoCreated={() => {
-                    // Refresh data when a new order is created
                     console.log("New order created, refreshing data...")
                   }}
                 />
               </div>
 
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card>
+                <Card className="border-l-4 border-l-primary">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Total Clientes</CardTitle>
                     <Users className="h-4 w-4 text-muted-foreground" />
@@ -73,84 +134,101 @@ export function Dashboard() {
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="border-l-4 border-l-secondary">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Pedidos Hoje</CardTitle>
                     <ShoppingCart className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-primary">{stats.pedidosHoje}</div>
+                    <div className="text-2xl font-bold text-secondary">{stats.pedidosHoje}</div>
                     <p className="text-xs text-muted-foreground">+5 desde ontem</p>
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="border-l-4 border-l-green-500">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Faturamento Hoje</CardTitle>
                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-primary">R$ {stats.faturamentoHoje.toFixed(2)}</div>
+                    <div className="text-2xl font-bold text-green-600">R$ {stats.faturamentoHoje.toFixed(2)}</div>
                     <p className="text-xs text-muted-foreground">+8% desde ontem</p>
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="border-l-4 border-l-blue-500">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Crescimento</CardTitle>
                     <TrendingUp className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-primary">+15%</div>
+                    <div className="text-2xl font-bold text-blue-600">+15%</div>
                     <p className="text-xs text-muted-foreground">Vendas este mês</p>
                   </CardContent>
                 </Card>
               </div>
 
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                <Card>
+                <Card className={`${stats.pedidosPendentes > 5 ? "ring-2 ring-secondary" : ""}`}>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Clock className="h-5 w-5 text-secondary" />
                       Pedidos Pendentes
+                      {stats.pedidosPendentes > 5 && (
+                        <Badge variant="secondary" className="animate-pulse">
+                          Alta Demanda
+                        </Badge>
+                      )}
                     </CardTitle>
                     <CardDescription>Pedidos aguardando preparo ou entrega</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-3xl font-bold text-secondary mb-2">{stats.pedidosPendentes}</div>
-                    <Button variant="outline" size="sm" onClick={() => setActiveTab("pedidos")}>
-                      Ver Pedidos
-                    </Button>
+                    <div className="text-3xl font-bold text-secondary mb-3">{stats.pedidosPendentes}</div>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" onClick={() => setActiveTab("pedidos")} className="flex-1">
+                        Ver Pedidos
+                      </Button>
+                      <Button size="sm" onClick={() => setActiveTab("maquina")} className="flex-1">
+                        Ir para Máquinas
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className={`${stats.pedidosNaoPagos > 0 ? "ring-2 ring-destructive" : ""}`}>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <AlertCircle className="h-5 w-5 text-destructive" />
                       Não Pagos
+                      {stats.pedidosNaoPagos > 0 && (
+                        <Badge variant="destructive" className="animate-pulse">
+                          Atenção!
+                        </Badge>
+                      )}
                     </CardTitle>
                     <CardDescription>Pedidos que ainda não foram pagos</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-3xl font-bold text-destructive mb-2">{stats.pedidosNaoPagos}</div>
-                    <Button variant="outline" size="sm" onClick={() => setActiveTab("pedidos")}>
-                      Verificar
+                    <div className="text-3xl font-bold text-destructive mb-3">{stats.pedidosNaoPagos}</div>
+                    <Button variant="destructive" size="sm" onClick={() => setActiveTab("pedidos")} className="w-full">
+                      Verificar Urgente
                     </Button>
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="bg-green-50 border-green-200">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <CheckCircle className="h-5 w-5 text-primary" />
+                      <CheckCircle className="h-5 w-5 text-green-600" />
                       Entregues Hoje
                     </CardTitle>
                     <CardDescription>Pedidos finalizados com sucesso</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-3xl font-bold text-primary mb-2">{stats.pedidosEntregues}</div>
-                    <Badge variant="secondary">Excelente!</Badge>
+                    <div className="text-3xl font-bold text-green-600 mb-2">{stats.pedidosEntregues}</div>
+                    <Badge variant="secondary" className="bg-green-100 text-green-800">
+                      Excelente Performance!
+                    </Badge>
                   </CardContent>
                 </Card>
               </div>

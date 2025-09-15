@@ -4,75 +4,76 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Updated color palette for roasted chicken theme */
-  --background: #ffffff;
-  --foreground: #374151;
-  --card: #fefce8;
-  --card-foreground: #374151;
+  /* Updated to red and yellow food service palette */
+  --background: #fffbeb;
+  --foreground: #451a03;
+  --card: #fef3c7;
+  --card-foreground: #451a03;
   --popover: #ffffff;
-  --popover-foreground: #374151;
-  --primary: #d97706;
+  --popover-foreground: #451a03;
+  --primary: #dc2626;
   --primary-foreground: #ffffff;
-  --secondary: #dc2626;
+  --secondary: #d97706; /* Darker yellow for better contrast */
   --secondary-foreground: #ffffff;
-  --muted: #fefce8;
-  --muted-foreground: #374151;
-  --accent: #dc2626;
+  --muted: #fef3c7;
+  --muted-foreground: #92400e; /* Darker muted text for better contrast */
+  --accent: #ea580c;
   --accent-foreground: #ffffff;
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
-  --border: #e5e7eb;
+  --border: #fed7aa;
   --input: #ffffff;
-  --ring: #d97706;
-  --chart-1: #d97706;
-  --chart-2: #dc2626;
-  --chart-3: #f59e0b;
-  --chart-4: #fefce8;
-  --chart-5: #374151;
+  --ring: #dc2626;
+  --chart-1: #dc2626;
+  --chart-2: #d97706; /* Darker yellow for charts */
+  --chart-3: #ea580c;
+  --chart-4: #92400e; /* Darker yellow variant */
+  --chart-5: #451a03;
   --radius: 0.5rem;
-  --sidebar: #fefce8;
-  --sidebar-foreground: #374151;
-  --sidebar-primary: #d97706;
+  --sidebar: #fef3c7;
+  --sidebar-foreground: #451a03;
+  --sidebar-primary: #dc2626;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #dc2626;
+  --sidebar-accent: #d97706; /* Darker yellow for sidebar */
   --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #e5e7eb;
-  --sidebar-ring: #d97706;
+  --sidebar-border: #fed7aa;
+  --sidebar-ring: #dc2626;
 }
 
 .dark {
-  --background: #1f2937;
-  --foreground: #f9fafb;
-  --card: #374151;
-  --card-foreground: #f9fafb;
-  --popover: #1f2937;
-  --popover-foreground: #f9fafb;
-  --primary: #f59e0b;
-  --primary-foreground: #1f2937;
-  --secondary: #ef4444;
-  --secondary-foreground: #f9fafb;
-  --muted: #374151;
-  --muted-foreground: #d1d5db;
-  --accent: #ef4444;
-  --accent-foreground: #f9fafb;
+  /* Dark mode with warm food-inspired colors */
+  --background: #451a03;
+  --foreground: #fef3c7;
+  --card: #78716c;
+  --card-foreground: #fef3c7;
+  --popover: #451a03;
+  --popover-foreground: #fef3c7;
+  --primary: #ef4444;
+  --primary-foreground: #451a03;
+  --secondary: #fbbf24;
+  --secondary-foreground: #451a03;
+  --muted: #78716c;
+  --muted-foreground: #d6d3d1;
+  --accent: #f97316;
+  --accent-foreground: #451a03;
   --destructive: #ef4444;
-  --destructive-foreground: #f9fafb;
-  --border: #4b5563;
-  --input: #374151;
-  --ring: #f59e0b;
-  --chart-1: #f59e0b;
-  --chart-2: #ef4444;
-  --chart-3: #fbbf24;
-  --chart-4: #374151;
-  --chart-5: #f9fafb;
-  --sidebar: #374151;
-  --sidebar-foreground: #f9fafb;
-  --sidebar-primary: #f59e0b;
-  --sidebar-primary-foreground: #1f2937;
-  --sidebar-accent: #ef4444;
-  --sidebar-accent-foreground: #f9fafb;
-  --sidebar-border: #4b5563;
-  --sidebar-ring: #f59e0b;
+  --destructive-foreground: #fef3c7;
+  --border: #a8a29e;
+  --input: #78716c;
+  --ring: #ef4444;
+  --chart-1: #ef4444;
+  --chart-2: #fbbf24;
+  --chart-3: #f97316;
+  --chart-4: #fed7aa;
+  --chart-5: #fef3c7;
+  --sidebar: #78716c;
+  --sidebar-foreground: #fef3c7;
+  --sidebar-primary: #ef4444;
+  --sidebar-primary-foreground: #451a03;
+  --sidebar-accent: #fbbf24;
+  --sidebar-accent-foreground: #451a03;
+  --sidebar-border: #a8a29e;
+  --sidebar-ring: #ef4444;
 }
 
 @theme inline {

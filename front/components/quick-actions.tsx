@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import { CheckCircle } from "lucide-react" // Added import for CheckCircle
 
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -19,7 +20,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { DollarSign, Clock, Plus, Search } from "lucide-react"
+import { DollarSign, Clock, Plus, Search, Zap, Phone } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 interface QuickActionsProps {
@@ -41,12 +42,36 @@ export function QuickActions({ onPedidoCreated }: QuickActionsProps) {
   const [loading, setLoading] = useState(false)
   const { toast } = useToast()
 
+  const quickOrderTemplates = [
+    {
+      id: "1-frango-completo",
+      name: "1 Frango Completo",
+      price: 35.0,
+      description: "1 Frango Inteiro + Acompanhamentos",
+    },
+    {
+      id: "2-frangos-completo",
+      name: "2 Frangos Completos",
+      price: 65.0,
+      description: "2 Frangos Inteiros + Acompanhamentos",
+    },
+    { id: "meio-frango", name: "Meio Frango", price: 20.0, description: "Meio Frango + Acompanhamentos" },
+    { id: "frango-batata", name: "Frango + Batata", price: 28.0, description: "Frango + Batata Frita" },
+  ]
+
+  const handleQuickOrderTemplate = (template: any) => {
+    setQuickOrderData({
+      ...quickOrderData,
+      descricao: template.description,
+      valor: template.price.toString(),
+    })
+  }
+
   const handleQuickOrder = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
 
     try {
-      // In a real app, this would call your API
       console.log("Creating quick order:", quickOrderData)
 
       toast({
@@ -73,7 +98,6 @@ export function QuickActions({ onPedidoCreated }: QuickActionsProps) {
 
     setLoading(true)
     try {
-      // Mock search - in real app, call clienteApi.getByTelefone
       const mockCliente = {
         id: 1,
         nome: "João Silva",
@@ -101,38 +125,71 @@ export function QuickActions({ onPedidoCreated }: QuickActionsProps) {
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      {/* Quick Order */}
       <Dialog open={isQuickOrderOpen} onOpenChange={setIsQuickOrderOpen}>
         <DialogTrigger asChild>
-          <Card className="cursor-pointer hover:shadow-md transition-shadow">
+          <Card className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
             <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Plus className="h-5 w-5 text-primary" />
+              <CardTitle className="flex items-center gap-2 text-lg text-primary">
+                <Plus className="h-6 w-6" />
                 Pedido Rápido
               </CardTitle>
-              <CardDescription>Criar pedido rapidamente</CardDescription>
+              <CardDescription>Criar pedido em segundos</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full">Novo Pedido</Button>
+              <Button className="w-full h-10 font-semibold">
+                <Zap className="h-4 w-4 mr-2" />
+                Novo Pedido
+              </Button>
             </CardContent>
           </Card>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>Pedido Rápido</DialogTitle>
-            <DialogDescription>Crie um pedido rapidamente com as informações básicas.</DialogDescription>
+            <DialogTitle className="flex items-center gap-2">
+              <Zap className="h-5 w-5 text-primary" />
+              Pedido Rápido
+            </DialogTitle>
+            <DialogDescription>
+              Crie um pedido rapidamente com templates pré-definidos ou personalizado.
+            </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleQuickOrder}>
-            <div className="grid gap-4 py-4">
+            <div className="grid gap-6 py-4">
+              {/* Quick templates */}
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Templates Rápidos</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {quickOrderTemplates.map((template) => (
+                    <Button
+                      key={template.id}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleQuickOrderTemplate(template)}
+                      className="justify-start h-auto p-3 text-left"
+                    >
+                      <div>
+                        <div className="font-medium text-sm">{template.name}</div>
+                        <div className="text-xs text-muted-foreground">R$ {template.price.toFixed(2)}</div>
+                      </div>
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="telefone">Telefone *</Label>
+                  <Label htmlFor="telefone" className="flex items-center gap-2">
+                    <Phone className="h-4 w-4" />
+                    Telefone *
+                  </Label>
                   <Input
                     id="telefone"
                     value={quickOrderData.telefone}
                     onChange={(e) => setQuickOrderData({ ...quickOrderData, telefone: e.target.value })}
                     placeholder="(11) 99999-9999"
                     required
+                    className="h-10"
                   />
                 </div>
                 <div className="grid gap-2">
@@ -143,25 +200,41 @@ export function QuickActions({ onPedidoCreated }: QuickActionsProps) {
                     onChange={(e) => setQuickOrderData({ ...quickOrderData, nome: e.target.value })}
                     placeholder="Nome do cliente"
                     required
+                    className="h-10"
                   />
                 </div>
               </div>
+
               <div className="grid gap-2">
                 <Label htmlFor="descricao">Pedido *</Label>
-                <Select onValueChange={(value) => setQuickOrderData({ ...quickOrderData, descricao: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o pedido" />
+                <Select
+                  onValueChange={(value) => {
+                    const template = quickOrderTemplates.find((t) => t.id === value)
+                    if (template) {
+                      setQuickOrderData({
+                        ...quickOrderData,
+                        descricao: template.description,
+                        valor: template.price.toString(),
+                      })
+                    } else {
+                      setQuickOrderData({ ...quickOrderData, descricao: value })
+                    }
+                  }}
+                >
+                  <SelectTrigger className="h-10">
+                    <SelectValue placeholder="Selecione o pedido ou use os templates acima" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1-frango-completo">1 Frango Inteiro + Acompanhamentos</SelectItem>
-                    <SelectItem value="2-frangos-completo">2 Frangos Inteiros + Acompanhamentos</SelectItem>
-                    <SelectItem value="meio-frango">Meio Frango + Acompanhamentos</SelectItem>
-                    <SelectItem value="frango-batata">Frango + Batata Frita</SelectItem>
-                    <SelectItem value="frango-farofa">Frango + Farofa + Vinagrete</SelectItem>
+                    {quickOrderTemplates.map((template) => (
+                      <SelectItem key={template.id} value={template.id}>
+                        {template.description} - R$ {template.price.toFixed(2)}
+                      </SelectItem>
+                    ))}
                     <SelectItem value="personalizado">Personalizado</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+
               {quickOrderData.descricao === "personalizado" && (
                 <div className="grid gap-2">
                   <Label htmlFor="descricao-custom">Descrição Personalizada</Label>
@@ -169,9 +242,11 @@ export function QuickActions({ onPedidoCreated }: QuickActionsProps) {
                     id="descricao-custom"
                     onChange={(e) => setQuickOrderData({ ...quickOrderData, descricao: e.target.value })}
                     placeholder="Descreva o pedido"
+                    className="h-10"
                   />
                 </div>
               )}
+
               <div className="grid gap-2">
                 <Label htmlFor="valor">Valor (R$) *</Label>
                 <Input
@@ -182,8 +257,10 @@ export function QuickActions({ onPedidoCreated }: QuickActionsProps) {
                   onChange={(e) => setQuickOrderData({ ...quickOrderData, valor: e.target.value })}
                   placeholder="0.00"
                   required
+                  className="h-10 text-lg font-semibold"
                 />
               </div>
+
               <div className="grid gap-2">
                 <Label htmlFor="observacoes">Observações</Label>
                 <Textarea
@@ -196,7 +273,7 @@ export function QuickActions({ onPedidoCreated }: QuickActionsProps) {
               </div>
             </div>
             <DialogFooter>
-              <Button type="submit" disabled={loading}>
+              <Button type="submit" disabled={loading} className="h-10 px-8">
                 {loading ? "Criando..." : "Criar Pedido"}
               </Button>
             </DialogFooter>
@@ -204,49 +281,62 @@ export function QuickActions({ onPedidoCreated }: QuickActionsProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Search Cliente */}
       <Dialog open={isSearchClienteOpen} onOpenChange={setIsSearchClienteOpen}>
         <DialogTrigger asChild>
-          <Card className="cursor-pointer hover:shadow-md transition-shadow">
+          <Card className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105 bg-gradient-to-br from-secondary/5 to-secondary/10 border-secondary/20">
             <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Search className="h-5 w-5 text-primary" />
+              <CardTitle className="flex items-center gap-2 text-lg text-secondary">
+                <Search className="h-6 w-6" />
                 Buscar Cliente
               </CardTitle>
-              <CardDescription>Encontrar cliente por telefone</CardDescription>
+              <CardDescription>Encontrar cliente rapidamente</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full bg-transparent">
-                Buscar
+              <Button
+                variant="outline"
+                className="w-full h-10 bg-transparent border-secondary/30 hover:bg-secondary/10"
+              >
+                Buscar por Telefone
               </Button>
             </CardContent>
           </Card>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[400px]">
+        <DialogContent className="sm:max-w-[450px]">
           <DialogHeader>
-            <DialogTitle>Buscar Cliente</DialogTitle>
-            <DialogDescription>Digite o telefone para encontrar o cliente.</DialogDescription>
+            <DialogTitle className="flex items-center gap-2">
+              <Search className="h-5 w-5 text-secondary" />
+              Buscar Cliente
+            </DialogTitle>
+            <DialogDescription>Digite o telefone para encontrar o cliente rapidamente.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="search-telefone">Telefone</Label>
+              <Label htmlFor="search-telefone" className="flex items-center gap-2">
+                <Phone className="h-4 w-4" />
+                Telefone
+              </Label>
               <div className="flex gap-2">
                 <Input
                   id="search-telefone"
                   value={searchTelefone}
                   onChange={(e) => setSearchTelefone(e.target.value)}
                   placeholder="(11) 99999-9999"
+                  className="h-10"
+                  onKeyDown={(e) => e.key === "Enter" && handleSearchCliente()}
                 />
-                <Button onClick={handleSearchCliente} disabled={loading}>
+                <Button onClick={handleSearchCliente} disabled={loading} className="h-10 px-6">
                   {loading ? "Buscando..." : "Buscar"}
                 </Button>
               </div>
             </div>
 
             {clienteEncontrado && (
-              <Card>
+              <Card className="bg-green-50 border-green-200">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-lg">Cliente Encontrado</CardTitle>
+                  <CardTitle className="text-lg text-green-800 flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5" />
+                    Cliente Encontrado
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
                   <p>
@@ -272,44 +362,44 @@ export function QuickActions({ onPedidoCreated }: QuickActionsProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Payment Status */}
-      <Card>
+      <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <DollarSign className="h-5 w-5 text-secondary" />
+          <CardTitle className="flex items-center gap-2 text-lg text-green-700">
+            <DollarSign className="h-6 w-6" />
             Pagamentos
           </CardTitle>
-          <CardDescription>Status dos pagamentos</CardDescription>
+          <CardDescription>Status financeiro em tempo real</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-sm">Pendentes</span>
-            <Badge variant="destructive">3</Badge>
+        <CardContent className="space-y-3">
+          <div className="flex items-center justify-between p-2 bg-white rounded-md">
+            <span className="text-sm font-medium">Pendentes</span>
+            <Badge variant="destructive" className="animate-pulse">
+              3
+            </Badge>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm">Pagos Hoje</span>
-            <Badge className="bg-green-100 text-green-800">15</Badge>
+          <div className="flex items-center justify-between p-2 bg-white rounded-md">
+            <span className="text-sm font-medium">Pagos Hoje</span>
+            <Badge className="bg-green-600 text-white">15</Badge>
           </div>
         </CardContent>
       </Card>
 
-      {/* Delivery Status */}
-      <Card>
+      <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Clock className="h-5 w-5 text-primary" />
+          <CardTitle className="flex items-center gap-2 text-lg text-blue-700">
+            <Clock className="h-6 w-6" />
             Entregas
           </CardTitle>
-          <CardDescription>Status das entregas</CardDescription>
+          <CardDescription>Status de entrega atualizado</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-sm">Pendentes</span>
-            <Badge className="bg-yellow-100 text-yellow-800">8</Badge>
+        <CardContent className="space-y-3">
+          <div className="flex items-center justify-between p-2 bg-white rounded-md">
+            <span className="text-sm font-medium">Pendentes</span>
+            <Badge className="bg-yellow-500 text-yellow-900 animate-pulse">8</Badge>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm">Entregues</span>
-            <Badge className="bg-green-100 text-green-800">12</Badge>
+          <div className="flex items-center justify-between p-2 bg-white rounded-md">
+            <span className="text-sm font-medium">Entregues</span>
+            <Badge className="bg-green-600 text-white">12</Badge>
           </div>
         </CardContent>
       </Card>

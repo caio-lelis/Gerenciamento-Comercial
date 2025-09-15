@@ -20,14 +20,14 @@ services:
 
   web:
     build:
-      context: ./backend
+      context: .
       dockerfile: Dockerfile
       args:
         PYTHON_VERSION: 3.9-slim
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/app
+      - ./:/app
     environment:
       - APP_ENV=development
       - PYTHONUNBUFFERED=1
@@ -39,6 +39,12 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8000/docs >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
     restart: unless-stopped
     command: sh -c "sleep 5 && uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
     networks:
@@ -46,12 +52,12 @@ services:
 
   frontend:
     build:
-      context: ./frontend
+      context: ./front
       dockerfile: Dockerfile.dev
     ports:
       - "3000:3000"
     volumes:
-      - ./frontend:/app
+      - ./front:/app
       - /app/node_modules
     environment:
       - NEXT_PUBLIC_API_URL=http://web:8000

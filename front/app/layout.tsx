@@ -7,8 +7,8 @@ import { Suspense } from "react"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "Frango Assado - Sistema de Gerenciamento",
-  description: "Sistema completo para gerenciamento de loja de frangos assados",
+  title: "Assados do Léo - Sistema de Gerenciamento",
+  description: "Sistema completo para gerenciamento de loja de assados",
   generator: "v0.app",
 }
 

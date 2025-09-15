@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Search, Plus, Edit, Trash2, Clock, CheckCircle, DollarSign, User, Calendar } from "lucide-react"
+import { Search, Plus, Edit, Trash2, Clock, DollarSign, User, Calendar } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 interface Pedido {
@@ -30,7 +30,6 @@ interface Pedido {
   descricao: string
   valor: number
   pago: boolean
-  entregue: boolean
   data_pedido: string
   observacoes?: string
 }
@@ -60,7 +59,6 @@ export function PedidoManager() {
       descricao: "2 Frangos inteiros + acompanhamentos",
       valor: 85.5,
       pago: true,
-      entregue: true,
       data_pedido: "2024-01-15T10:30:00",
       observacoes: "Sem pimenta",
     },
@@ -71,7 +69,6 @@ export function PedidoManager() {
       descricao: "1 Frango inteiro + farofa + vinagrete",
       valor: 45.0,
       pago: false,
-      entregue: false,
       data_pedido: "2024-01-15T11:15:00",
     },
     {
@@ -81,7 +78,6 @@ export function PedidoManager() {
       descricao: "3 Frangos inteiros para festa",
       valor: 120.0,
       pago: true,
-      entregue: false,
       data_pedido: "2024-01-15T12:00:00",
       observacoes: "Entregar às 18h",
     },
@@ -92,7 +88,6 @@ export function PedidoManager() {
       descricao: "1 Frango inteiro + batata frita",
       valor: 52.0,
       pago: false,
-      entregue: false,
       data_pedido: "2024-01-15T13:30:00",
     },
   ]
@@ -110,10 +105,8 @@ export function PedidoManager() {
 
     const matchesStatus =
       statusFilter === "todos" ||
-      (statusFilter === "pendentes" && (!pedido.pago || !pedido.entregue)) ||
-      (statusFilter === "nao-pagos" && !pedido.pago) ||
-      (statusFilter === "nao-entregues" && !pedido.entregue) ||
-      (statusFilter === "finalizados" && pedido.pago && pedido.entregue)
+      (statusFilter === "pagos" && pedido.pago) ||
+      (statusFilter === "nao-pagos" && !pedido.pago)
 
     return matchesSearch && matchesStatus
   })
@@ -150,7 +143,6 @@ export function PedidoManager() {
           descricao: formData.descricao,
           valor: Number.parseFloat(formData.valor),
           pago: false,
-          entregue: false,
           data_pedido: new Date().toISOString(),
           observacoes: formData.observacoes,
         }
@@ -207,34 +199,11 @@ export function PedidoManager() {
     })
   }
 
-  const handleToggleEntregue = async (id: number) => {
-    const updatedPedidos = pedidos.map((p) => (p.id === id ? { ...p, entregue: !p.entregue } : p))
-    setPedidos(updatedPedidos)
-    const pedido = pedidos.find((p) => p.id === id)
-    toast({
-      title: pedido?.entregue ? "Marcado como não entregue" : "Marcado como entregue",
-      description: "Status de entrega atualizado.",
-    })
-  }
-
-  const openNewPedidoDialog = () => {
-    setEditingPedido(null)
-    setFormData({ cliente_id: "", cliente_nome: "", descricao: "", valor: "", observacoes: "" })
-    setIsDialogOpen(true)
-  }
-
   const getStatusBadge = (pedido: Pedido) => {
-    if (pedido.pago && pedido.entregue) {
-      return <Badge className="bg-green-100 text-green-800">Finalizado</Badge>
-    }
-    if (!pedido.pago && !pedido.entregue) {
-      return <Badge variant="destructive">Pendente</Badge>
-    }
-    if (!pedido.pago) {
-      return <Badge variant="secondary">Não Pago</Badge>
-    }
-    if (!pedido.entregue) {
-      return <Badge className="bg-yellow-100 text-yellow-800">Não Entregue</Badge>
+    if (pedido.pago) {
+      return <Badge className="bg-green-100 text-green-800">Pago</Badge>
+    } else {
+      return <Badge variant="destructive">Não Pago</Badge>
     }
   }
 
@@ -247,7 +216,7 @@ export function PedidoManager() {
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={openNewPedidoDialog} className="gap-2">
+            <Button onClick={() => setIsDialogOpen(true)} className="gap-2">
               <Plus className="h-4 w-4" />
               Novo Pedido
             </Button>
@@ -335,10 +304,8 @@ export function PedidoManager() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="todos">Todos</SelectItem>
-                <SelectItem value="pendentes">Pendentes</SelectItem>
+                <SelectItem value="pagos">Pagos</SelectItem>
                 <SelectItem value="nao-pagos">Não Pagos</SelectItem>
-                <SelectItem value="nao-entregues">Não Entregues</SelectItem>
-                <SelectItem value="finalizados">Finalizados</SelectItem>
               </SelectContent>
             </Select>
             <Badge variant="secondary">{filteredPedidos.length} encontrados</Badge>
@@ -391,20 +358,16 @@ export function PedidoManager() {
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
                             <Button
-                              variant="outline"
+                              variant={pedido.pago ? "default" : "outline"}
                               size="sm"
                               onClick={() => handleTogglePago(pedido.id)}
-                              className={pedido.pago ? "text-green-600" : "text-red-600"}
+                              className={
+                                pedido.pago
+                                  ? "bg-green-600 hover:bg-green-700 text-white"
+                                  : "text-red-600 hover:bg-red-50"
+                              }
                             >
                               <DollarSign className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleToggleEntregue(pedido.id)}
-                              className={pedido.entregue ? "text-green-600" : "text-yellow-600"}
-                            >
-                              <CheckCircle className="h-4 w-4" />
                             </Button>
                             <Button variant="outline" size="sm" onClick={() => handleEdit(pedido)}>
                               <Edit className="h-4 w-4" />
@@ -457,22 +420,15 @@ export function PedidoManager() {
                       )}
                       <div className="flex items-center gap-2 pt-2">
                         <Button
-                          variant="outline"
+                          variant={pedido.pago ? "default" : "outline"}
                           size="sm"
                           onClick={() => handleTogglePago(pedido.id)}
-                          className={pedido.pago ? "text-green-600" : "text-red-600"}
+                          className={
+                            pedido.pago ? "bg-green-600 hover:bg-green-700 text-white" : "text-red-600 hover:bg-red-50"
+                          }
                         >
                           <DollarSign className="h-4 w-4 mr-1" />
                           {pedido.pago ? "Pago" : "Não Pago"}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleToggleEntregue(pedido.id)}
-                          className={pedido.entregue ? "text-green-600" : "text-yellow-600"}
-                        >
-                          <CheckCircle className="h-4 w-4 mr-1" />
-                          {pedido.entregue ? "Entregue" : "Pendente"}
                         </Button>
                       </div>
                     </CardContent>
@@ -492,7 +448,7 @@ export function PedidoManager() {
                   : "Comece adicionando seu primeiro pedido."}
               </p>
               {!searchTerm && statusFilter === "todos" && (
-                <Button onClick={openNewPedidoDialog}>
+                <Button onClick={() => setIsDialogOpen(true)}>
                   <Plus className="h-4 w-4 mr-2" />
                   Adicionar Pedido
                 </Button>

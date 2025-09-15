@@ -15,7 +15,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ChefHat, Clock, Flame, Grid3X3, CheckCircle, Timer, Plus, Settings, Trash2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
@@ -59,7 +58,6 @@ export function MaquinasManager() {
   const { toast } = useToast()
 
   useEffect(() => {
-    // Inicializar com uma máquina padrão
     const maquinaInicial: Maquina = {
       id: "maquina-1",
       nome: "Máquina Principal",
@@ -70,7 +68,6 @@ export function MaquinasManager() {
       })),
     }
 
-    // Adicionar algumas posições ocupadas para demonstração
     maquinaInicial.posicoes[0] = {
       id: 1,
       ocupada: true,
@@ -83,7 +80,6 @@ export function MaquinasManager() {
 
     setMaquinas([maquinaInicial])
 
-    // Mock de pedidos pendentes
     setPedidosPendentes([
       { id: 2, cliente_nome: "Maria Santos", descricao: "1 Frango inteiro", valor: 45.0, pago: false, entregue: false },
       {
@@ -224,7 +220,6 @@ export function MaquinasManager() {
         return { ...m, posicoes: novasPosicoes }
       })
 
-      // Retornar pedido para lista de pendentes
       if (posicao.pedido_id && posicao.cliente_nome) {
         const pedidoRetornado: Pedido = {
           id: posicao.pedido_id,
@@ -252,24 +247,18 @@ export function MaquinasManager() {
     setIsDialogOpen(true)
   }
 
-  const getEstatisticasGerais = () => {
-    const totalPosicoes = maquinas.reduce((acc, m) => acc + m.posicoes.length, 0)
-    const posicaoesOcupadas = maquinas.reduce((acc, m) => acc + m.posicoes.filter((p) => p.ocupada).length, 0)
-    const posicoesProntas = maquinas.reduce((acc, m) => {
-      return (
-        acc +
-        m.posicoes.filter((p) => {
-          if (!p.ocupada) return false
-          const progresso = calcularProgresso(p.tempo_inicio!, p.tempo_estimado!)
-          return progresso >= 100
-        }).length
-      )
-    }, 0)
-
-    return { totalPosicoes, posicaoesOcupadas, posicoesProntas }
-  }
-
-  const { totalPosicoes, posicaoesOcupadas, posicoesProntas } = getEstatisticasGerais()
+  const totalPosicoes = maquinas.reduce((acc, m) => acc + m.posicoes.length, 0)
+  const posicaoesOcupadas = maquinas.reduce((acc, m) => acc + m.posicoes.filter((p) => p.ocupada).length, 0)
+  const posicoesProntas = maquinas.reduce((acc, m) => {
+    return (
+      acc +
+      m.posicoes.filter((p) => {
+        if (!p.ocupada) return false
+        const progresso = calcularProgresso(p.tempo_inicio!, p.tempo_estimado!)
+        return progresso >= 100
+      }).length
+    )
+  }, 0)
 
   return (
     <div className="space-y-6">
@@ -296,7 +285,6 @@ export function MaquinasManager() {
         </div>
       </div>
 
-      {/* Estatísticas gerais */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -340,101 +328,133 @@ export function MaquinasManager() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-600">{pedidosPendentes.length}</div>
-            <p className="text-xs text-muted-foreground">aguardando posição</p>
+            <p className="text-xs text-muted-foreground">aguardando preparo</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Tabs para cada máquina */}
-      <Tabs defaultValue={maquinas[0]?.id} className="w-full">
-        <TabsList className="grid w-full grid-cols-auto">
-          {maquinas.map((maquina) => (
-            <TabsTrigger key={maquina.id} value={maquina.id} className="flex items-center gap-2">
-              <ChefHat className="h-4 w-4" />
-              {maquina.nome}
-              <Badge variant="secondary" className="ml-2">
-                {maquina.posicoes.filter((p) => p.ocupada).length}/12
-              </Badge>
-            </TabsTrigger>
-          ))}
-        </TabsList>
+      <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
+        {maquinas.map((maquina) => {
+          const posicaoesOcupadasMaquina = maquina.posicoes.filter((p) => p.ocupada).length
+          const posicoesProntasMaquina = maquina.posicoes.filter((p) => {
+            if (!p.ocupada) return false
+            const progresso = calcularProgresso(p.tempo_inicio!, p.tempo_estimado!)
+            return progresso >= 100
+          }).length
 
-        {maquinas.map((maquina) => (
-          <TabsContent key={maquina.id} value={maquina.id} className="space-y-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <Grid3X3 className="h-5 w-5" />
-                    {maquina.nome} - Posições
-                  </CardTitle>
-                  <CardDescription>Clique em uma posição livre para adicionar um frango</CardDescription>
+          return (
+            <Card key={maquina.id} className="relative">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <ChefHat className="h-5 w-5 text-primary" />
+                    <CardTitle className="text-lg">{maquina.nome}</CardTitle>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="gap-1">
+                      <Grid3X3 className="h-3 w-3" />
+                      {posicaoesOcupadasMaquina}/12
+                    </Badge>
+                    {posicoesProntasMaquina > 0 && (
+                      <Badge className="bg-blue-100 text-blue-800 gap-1 animate-pulse">
+                        <CheckCircle className="h-3 w-3" />
+                        {posicoesProntasMaquina}
+                      </Badge>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removerMaquina(maquina.id)}
+                      className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                      disabled={maquinas.length <= 1}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-                <Button variant="destructive" size="sm" onClick={() => removerMaquina(maquina.id)} className="gap-2">
-                  <Trash2 className="h-4 w-4" />
-                  Remover Máquina
-                </Button>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-4 gap-4 max-w-2xl mx-auto">
+                <div className="grid grid-cols-4 gap-2">
                   {maquina.posicoes.map((posicao) => {
                     const { status, cor, icone: IconeStatus } = getStatusPosicao(posicao)
 
                     return (
                       <div
                         key={posicao.id}
-                        className={`relative aspect-square rounded-lg border-2 ${cor} cursor-pointer transition-all hover:scale-105 flex flex-col items-center justify-center p-3`}
+                        className={`relative aspect-square rounded-md border-2 ${cor} cursor-pointer transition-all hover:scale-105 hover:shadow-sm flex flex-col items-center justify-center p-2`}
                         onClick={() =>
                           posicao.ocupada
                             ? removerFrangoDaPosicao(maquina.id, posicao.id)
                             : abrirDialogPosicao(maquina.id, posicao.id)
                         }
                       >
-                        <IconeStatus className="h-8 w-8 mb-2" />
-                        <span className="text-sm font-bold">Pos. {posicao.id}</span>
+                        <IconeStatus className="h-4 w-4 mb-1" />
+                        <span className="text-xs font-bold">{posicao.id}</span>
 
-                        {posicao.ocupada && (
-                          <div className="mt-2 text-center">
-                            <p className="text-xs font-medium truncate w-full">{posicao.cliente_nome}</p>
-                            {posicao.tempo_inicio && posicao.tempo_estimado && (
-                              <div className="text-xs text-muted-foreground mt-1">
-                                <p>{calcularTempoRestante(posicao.tempo_inicio, posicao.tempo_estimado)}min</p>
-                                <div className="w-full bg-muted rounded-full h-1 mt-1">
-                                  <div
-                                    className="bg-primary h-1 rounded-full transition-all"
-                                    style={{
-                                      width: `${calcularProgresso(posicao.tempo_inicio, posicao.tempo_estimado)}%`,
-                                    }}
-                                  />
-                                </div>
-                              </div>
-                            )}
+                        {posicao.ocupada && posicao.tempo_inicio && posicao.tempo_estimado && (
+                          <div className="absolute -bottom-1 left-0 right-0">
+                            <div className="w-full bg-muted rounded-full h-1">
+                              <div
+                                className="bg-primary h-1 rounded-full transition-all"
+                                style={{
+                                  width: `${calcularProgresso(posicao.tempo_inicio, posicao.tempo_estimado)}%`,
+                                }}
+                              />
+                            </div>
                           </div>
                         )}
                       </div>
                     )
                   })}
                 </div>
+
+                <div className="mt-3 space-y-1">
+                  {maquina.posicoes
+                    .filter((p) => p.ocupada)
+                    .slice(0, 3)
+                    .map((posicao) => (
+                      <div
+                        key={posicao.id}
+                        className="flex items-center justify-between text-xs bg-muted/50 rounded px-2 py-1"
+                      >
+                        <span className="font-medium">
+                          Pos. {posicao.id}: {posicao.cliente_nome}
+                        </span>
+                        {posicao.tempo_inicio && posicao.tempo_estimado && (
+                          <span className="text-muted-foreground">
+                            {calcularTempoRestante(posicao.tempo_inicio, posicao.tempo_estimado)}min
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  {maquina.posicoes.filter((p) => p.ocupada).length > 3 && (
+                    <div className="text-xs text-muted-foreground text-center">
+                      +{maquina.posicoes.filter((p) => p.ocupada).length - 3} mais...
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
-          </TabsContent>
-        ))}
-      </Tabs>
+          )
+        })}
+      </div>
 
-      {/* Lista de pedidos pendentes */}
       {pedidosPendentes.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Clock className="h-5 w-5" />
-              Pedidos Aguardando Posição
+              Pedidos Aguardando Preparo
             </CardTitle>
-            <CardDescription>{pedidosPendentes.length} pedidos na fila</CardDescription>
+            <CardDescription>Clique em uma posição livre para adicionar estes pedidos</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
               {pedidosPendentes.map((pedido) => (
-                <div key={pedido.id} className="flex items-center justify-between p-3 border rounded-lg">
+                <div
+                  key={pedido.id}
+                  className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                >
                   <div>
                     <p className="font-medium">{pedido.cliente_nome}</p>
                     <p className="text-sm text-muted-foreground">{pedido.descricao}</p>
@@ -448,7 +468,6 @@ export function MaquinasManager() {
         </Card>
       )}
 
-      {/* Dialog para adicionar nova máquina */}
       <Dialog open={isAddMaquinaOpen} onOpenChange={setIsAddMaquinaOpen}>
         <DialogContent className="sm:max-w-[400px]">
           <DialogHeader>
@@ -474,13 +493,11 @@ export function MaquinasManager() {
         </DialogContent>
       </Dialog>
 
-      {/* Dialog para adicionar frango */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[400px]">
           <DialogHeader>
             <DialogTitle>
-              Adicionar Frango na {maquinas.find((m) => m.id === maquinaSelecionada)?.nome} - Posição{" "}
-              {posicaoSelecionada}
+              Adicionar Frango na {maquinaSelecionada} - Posição {posicaoSelecionada}
             </DialogTitle>
             <DialogDescription>Selecione o pedido e configure o tempo de preparo</DialogDescription>
           </DialogHeader>
