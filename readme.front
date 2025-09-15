@@ -1,0 +1,41 @@
+Thought for 2sPara rodar sua aplicação localmente, siga estes passos:
+
+## 1. Baixar o Código
+
+- Clique nos três pontos no canto superior direito do bloco de código
+- Selecione "Download ZIP" para baixar o projeto
+
+
+## 2. Instalar e Executar
+
+```shellscript
+# Extrair o ZIP e navegar para a pasta
+cd frango-assado-management
+
+# Instalar dependências
+npm install
+
+# Executar em modo de desenvolvimento
+npm run dev
+```
+
+## 3. Configurar Variáveis de Ambiente
+
+Crie um arquivo `.env.local` na raiz do projeto:
+
+```plaintext
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+Substitua `http://localhost:8000` pela URL onde sua API FastAPI está rodando.
+
+## 4. Executar sua API FastAPI
+
+Certifique-se de que sua API FastAPI esteja rodando em paralelo:
+
+```shellscript
+# No diretório da sua API FastAPI
+uvicorn main:app --reload
+```
+
+A aplicação estará disponível em `http://localhost:3000`. O sistema se conectará automaticamente com sua API FastAPI para gerenciar clientes, pedidos e as posições das máquinas de frango.

@@ -20,14 +20,14 @@ services:
 
   web:
     build:
-      context: .
+      context: ./backend
       dockerfile: Dockerfile
       args:
         PYTHON_VERSION: 3.9-slim
     ports:
       - "8000:8000"
     volumes:
-      - .:/app
+      - ./backend:/app
     environment:
       - APP_ENV=development
       - PYTHONUNBUFFERED=1
@@ -44,11 +44,27 @@ services:
     networks:
       - microservicos-net
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - NEXT_PUBLIC_API_URL=http://web:8000
+      - NODE_ENV=development
+    depends_on:
+      - web
+    restart: unless-stopped
+    networks:
+      - microservicos-net
+
 volumes:
   postgres_data:
 
 networks:
   microservicos-net:
     external: true
-# docker network create microservicos-net
-# docker network ls
