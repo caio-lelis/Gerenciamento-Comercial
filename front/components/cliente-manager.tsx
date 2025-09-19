@@ -44,29 +44,30 @@ export function ClienteManager() {
   const [loading, setLoading] = useState(false)
   const { toast } = useToast()
 
-  // Mock data - replace with actual API calls
-  const mockClientes: Cliente[] = [
-    {
-      id: 1,
-      nome: "João Silva",
-      telefone: "(11) 99999-9999",
-      endereco: "Rua das Flores, 123",
-      email: "joao@email.com",
-    },
-    {
-      id: 2,
-      nome: "Maria Santos",
-      telefone: "(11) 88888-8888",
-      endereco: "Av. Principal, 456",
-      email: "maria@email.com",
-    },
-    { id: 3, nome: "Pedro Oliveira", telefone: "(11) 77777-7777", endereco: "Rua do Comércio, 789" },
-    { id: 4, nome: "Ana Costa", telefone: "(11) 66666-6666", endereco: "Praça Central, 321", email: "ana@email.com" },
-  ]
+  // URL base da API - ajuste conforme necessário
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+
+  // Buscar todos os clientes
+  const fetchClientes = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/clientes/get`)
+      if (!response.ok) {
+        throw new Error("Erro ao buscar clientes")
+      }
+      const data = await response.json()
+      setClientes(data)
+    } catch (error) {
+      console.error("Erro ao buscar clientes:", error)
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar a lista de clientes.",
+        variant: "destructive",
+      })
+    }
+  }
 
   useEffect(() => {
-    // Simulate API call
-    setClientes(mockClientes)
+    fetchClientes()
   }, [])
 
   const filteredClientes = clientes.filter(
@@ -79,20 +80,45 @@ export function ClienteManager() {
 
     try {
       if (editingCliente) {
-        // Update cliente
-        const updatedClientes = clientes.map((c) => (c.id === editingCliente.id ? { ...c, ...formData } : c))
-        setClientes(updatedClientes)
+        // Atualizar cliente existente
+        const response = await fetch(`${API_BASE_URL}/clientes/update/${editingCliente.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            nome: formData.nome,
+            telefone: formData.telefone,
+          }),
+        })
+
+        if (!response.ok) {
+          throw new Error("Erro ao atualizar cliente")
+        }
+
+        await fetchClientes() // Recarregar a lista
         toast({
           title: "Cliente atualizado",
           description: "Os dados do cliente foram atualizados com sucesso.",
         })
       } else {
-        // Create new cliente
-        const newCliente: Cliente = {
-          id: Math.max(...clientes.map((c) => c.id)) + 1,
-          ...formData,
+        // Criar novo cliente
+        const response = await fetch(`${API_BASE_URL}/clientes/create`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            nome: formData.nome,
+            telefone: formData.telefone,
+          }),
+        })
+
+        if (!response.ok) {
+          throw new Error("Erro ao criar cliente")
         }
-        setClientes([...clientes, newCliente])
+
+        await fetchClientes() // Recarregar a lista
         toast({
           title: "Cliente criado",
           description: "Novo cliente foi adicionado com sucesso.",
@@ -103,6 +129,7 @@ export function ClienteManager() {
       setEditingCliente(null)
       setFormData({ nome: "", telefone: "", endereco: "", email: "" })
     } catch (error) {
+      console.error("Erro ao salvar cliente:", error)
       toast({
         title: "Erro",
         description: "Ocorreu um erro ao salvar o cliente.",
@@ -110,6 +137,33 @@ export function ClienteManager() {
       })
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleDelete = async (id: number) => {
+    if (confirm("Tem certeza que deseja excluir este cliente?")) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/clientes/delete/${id}`, {
+          method: "DELETE",
+        })
+
+        if (!response.ok) {
+          throw new Error("Erro ao excluir cliente")
+        }
+
+        await fetchClientes() // Recarregar a lista
+        toast({
+          title: "Cliente excluído",
+          description: "Cliente foi removido com sucesso.",
+        })
+      } catch (error) {
+        console.error("Erro ao excluir cliente:", error)
+        toast({
+          title: "Erro",
+          description: "Ocorreu um erro ao excluir o cliente.",
+          variant: "destructive",
+        })
+      }
     }
   }
 
@@ -122,16 +176,6 @@ export function ClienteManager() {
       email: cliente.email || "",
     })
     setIsDialogOpen(true)
-  }
-
-  const handleDelete = async (id: number) => {
-    if (confirm("Tem certeza que deseja excluir este cliente?")) {
-      setClientes(clientes.filter((c) => c.id !== id))
-      toast({
-        title: "Cliente excluído",
-        description: "Cliente foi removido com sucesso.",
-      })
-    }
   }
 
   const openNewClienteDialog = () => {
